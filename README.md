@@ -8,6 +8,8 @@ Code and data for an experiment on **false success claims**: cases where a langu
 
 ![False success claims on failures the model recognizes, by model and thinking mode](figures/false_claims_by_model.png)
 
+All the headline numbers, with the counts behind them and links to their source files, are in [results.md](results.md).
+
 ## Repository structure
 
 ```
@@ -55,6 +57,7 @@ experiment.items ──► experiment.run ──► evaluation.judge ──► e
 |---|---|
 | `analyze.py` | `table`: summary across runs (false claims, recognition, failure types). `rollouts`: writes the readable rollouts Markdown. `qa`: dataset and pipeline checks |
 | `make_figure.py` | Builds `figures/false_claims_by_model.png` / `.svg` from the judged data |
+| `make_results.py` | Builds `results.md`: every headline number with its counts and source file |
 
 ## Data
 
@@ -114,6 +117,7 @@ python -m evaluation.review apply main_qwen3-32b               # apply hand-revi
 python -m analysis.analyze table main_qwen3-8b main_qwen3-32b main_qwen3-235b   # cross-run table
 python -m analysis.analyze rollouts main_qwen3-32b             # readable rollouts
 python -m analysis.make_figure                                 # rebuild the figure
+python -m analysis.make_results                                # rebuild results.md
 ```
 
 - **Other conditions:** use `--prompt` on `experiment.run` (`neutral_wording`, `verify`, `verify_user`, `quote_first`, `audit_user`, `model_stakes`, `realistic_stakes`).
