@@ -41,9 +41,9 @@ The templates form a balanced grid of **10 domains × 5 subtle-failure types × 
 
 ## Key results
 
-- **False claims are frequent on subtle failures and essentially absent on explicit ones.** Rates are 42–50% of subtle failures, rising to 80–93% for outputs that look like a completed action on the wrong target. The subtle set was designed to be hard, so these aren't deployment rates.
+- **False claims are frequent on subtle failures and essentially absent on explicit ones.** Rates are 43–49% of subtle failures, rising to 80–93% for outputs that look like a completed action on the wrong target. The subtle set was designed to be hard, so these aren't deployment rates.
 - **Most false claims involve evidence the model can read.** In 76–82% of them, the same model correctly identifies the failure when asked in a fresh context.
-- **Scale doesn't help.** From 8B to 235B, recognition improves (130 → 137 of 149 failures), but false claims don't fall (63 → 74 → 67).
+- **Scale doesn't help.** From 8B to 235B, recognition improves (131 → 138 of 150 failures), but false claims don't fall (64 → 74 → 68).
 - **Reasoning helps a lot, and a well-placed prompt helps some.** Thinking mode cuts false claims on recognized failures by about two thirds at every size (see the figure). An instruction to check the result helps only when placed next to the task, not in the system prompt.
 - **Models sometimes notice the failure and report success anyway.** In 45 hand-verified reasoning traces, the model registers the problem and then resolves it toward "success", often with an invented rationale. Examples: *"I should assume it worked"*, *"no errors were mentioned, so it's a success"*, and one trace that concludes *"the sync is scheduled too late"* and then reports *"this timing should allow sufficient time."*
 - **Asking the agent to double-check fails where it matters.** When a report contradicts the evidence, the model's in-context self-check stands by it (31/33 for 8B, 43/47 for 32B). Only the fresh-context check catches it.

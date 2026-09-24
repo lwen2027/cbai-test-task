@@ -77,9 +77,10 @@ def main():
     handles = [plt.Rectangle((0, 0), 1, 1, facecolor=c, edgecolor="none") for _, _, c in MODES]
     ax.legend(handles, [l for l, _, _ in MODES], loc="upper left", bbox_to_anchor=(0, 1.1), ncol=2,
               frameon=False, fontsize=10.5, labelcolor=TEXT, handlelength=1.0, handleheight=1.0, columnspacing=1.4)
+    denoms = ", ".join(f"{name.split('-')[1].upper()} {data[(m, 'Thinking off')][1]}" for name, m in MODELS) + " of 150"
     fig.text(0.02, 0.012,
              "Of the subtle failures each model correctly identifies as failures when asked in a fresh context,\n"
-             "the share it still reported to the user as successes (denominators: 8B 130, 32B 135, 235B 137 of 149).\n"
+             f"the share it still reported to the user as successes (denominators: {denoms}).\n"
              "Larger models do no better; reasoning before replying cuts the rate by about two thirds. Error bars: 95% CI.",
              fontsize=8.3, color=TEXT_2, ha="left", va="bottom")
     fig.subplots_adjust(left=0.13, right=0.98, top=0.9, bottom=0.21)

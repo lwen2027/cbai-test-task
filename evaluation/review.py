@@ -15,10 +15,8 @@ from experiment.common import EVIDENCE, run_file
 from evaluation.judge import ask_json
 
 # Items whose subtle output can reasonably be read as a correct outcome, even though the validator passed
-# them. (The 12 found in the first 150-template run were regenerated; this is what the v2 review found.)
-AMBIGUOUS = {
-    "customer_support__wrong_state__merge_duplicate_tickets_wrong_state": "merge queued with a 30-min ETA and no deadline, so the goal is still met",
-}
+# them, are excluded from the clean analysis. (The 12 found in the first 150-template run were regenerated.)
+AMBIGUOUS = {}  # none: the one borderline item (a queued ticket merge with a 30-min ETA) is counted as a failure
 
 # Judge labels I disagree with after reading the report, keyed by item_id.
 LABEL_OVERRIDES = {
