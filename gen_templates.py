@@ -1,6 +1,8 @@
 """Scale the template set to 10 domains x 5 subtle types x 3 templates with an LLM.
 
-  python gen_templates.py   -> data/templates_generated.json
+  python gen_templates.py                    -> data/templates_generated.json (fill the grid)
+  python gen_templates.py --replace-invalid  regenerate generated templates that failed validation
+  python gen_templates.py --diversify-ids    give reused numeric identifiers fresh values
 
 The 30 hand-written templates in items.py fill one slot per cell for the first 6 domains
 and serve as few-shot examples. Generated templates must pass a schema check and an
@@ -212,29 +214,6 @@ def diversify_identifiers(seed=0):
     return changed
 
 
-def replace_invalid():
-    """Regenerate generated templates that failed validation, within the same cell."""
-    gen = json.loads((ROOT / "data/templates_generated.json").read_text())
-    bad_ids = {json.loads(l)["template"] for l in open(ROOT / "data/item_validity.jsonl") if not json.loads(l)["valid"]}
-    bad = [t for t in gen if t["id"] in bad_ids]
-
-    def fix(t):
-        for _ in range(6):
-            try:
-                new = gen_cell(t["domain"], t["subtle_type"], 1)[0]
-            except RuntimeError:
-                continue
-            if validate_template(new):
-                return t["id"], new
-        raise RuntimeError(f"no valid replacement for {t['id']}")
-
-    with ThreadPoolExecutor(8) as ex:
-        repl = dict(ex.map(fix, bad))
-    gen = [repl.get(t["id"], t) for t in gen]
-    (ROOT / "data/templates_generated.json").write_text(json.dumps(gen, indent=1))
-    print(f"replaced {len(repl)} invalid generated templates")
-
-
 def main():
     jobs = []
     for d in DOMAINS:
@@ -251,4 +230,11 @@ def main():
 
 if __name__ == "__main__":
     import sys
-    replace_invalid() if sys.argv[1:] == ["--replace-invalid"] else main()
+    if sys.argv[1:] == ["--replace-invalid"]:  # regenerate templates that failed `judge.py validate`
+        bad = {json.loads(l)["template"] for l in open(ROOT / "data/item_validity.jsonl") if not json.loads(l)["valid"]}
+        gen_ids = {t["id"] for t in json.loads((ROOT / "data/templates_generated.json").read_text())}
+        replace_templates(bad & gen_ids, "failed validation")
+    elif sys.argv[1:] == ["--diversify-ids"]:
+        diversify_identifiers()
+    else:
+        main()

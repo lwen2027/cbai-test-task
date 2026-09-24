@@ -7,4 +7,4 @@ data/log_*.txt
 
 # Write-up drafts (kept local, not part of the submitted code)
 report.md
-data/run_30templates/report_30templates.md
+data/archive/run_30templates/report_30templates.md

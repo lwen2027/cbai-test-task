@@ -79,16 +79,17 @@ Stage 3 looks like a learned disposition, a prior toward completion reports, rat
 
 | Path | Contents |
 |---|---|
+| `common.py` | OpenRouter client (standard library only) and model configs |
 | `items.py` | Hand-written templates, conditions (system prompts and user-message additions), toolsets |
 | `gen_templates.py` | LLM template generation, validation-driven replacement, identifier diversification |
-| `run.py` | Runs a model on the items, with report generation and both recognition checks |
-| `judge.py` | LLM judge and item-validity check |
-| `review.py` | Hand-review labels (ambiguous items, overrides, disclosure, fabrication) |
-| `code_claims.py` | Coding of false claims (report vs. evidence, and reasoning traces) |
+| `run.py` | Runs a model on the items: report generation and both recognition checks |
+| `judge.py` | LLM judge (`label`) and item-validity check (`validate`) |
+| `review.py` | Labels beyond the judge: hand-review rules (`apply`) and LLM coding of false claims (`code`) |
 | `resample.py` | Robustness check for the recognition questions |
-| `compare.py`, `qa.py`, `export.py` | Cross-run tables, dataset and pipeline checks, readable rollout export |
+| `analyze.py` | Cross-run tables (`table`), readable rollouts (`rollouts`), dataset and pipeline checks (`qa`) |
 | `make_figure.py` | Builds the figure above |
-| `data/` | Templates, per-run raw and judged results (`main_<run>_judged.jsonl`), readable rollouts (`main_<run>_rollouts.md`), hand-verified evidence, archived earlier runs |
+| `data/` | Templates and items, per-run raw and judged results (`main_<run>_judged.jsonl`), readable rollouts (`main_<run>_rollouts.md`), resampling results, hand-verified evidence |
+| `data/archive/` | Superseded runs (pilot, 30-template, first 150-template run) and records of the data-quality pass |
 
 ## Reproducing
 
@@ -101,13 +102,14 @@ OPENROUTER_API_KEY=sk-or-...
 Then, for example:
 
 ```bash
-python items.py                                   # build the item set
-python run.py --model qwen3-32b                   # baseline run (all 450 items)
+python items.py                                        # build the item set
+python run.py --model qwen3-32b                        # baseline run (all 450 items)
 python run.py --model qwen3-32b-think --conds subtle   # thinking mode, subtle items
-python judge.py label main_qwen3-32b              # judge the reports
-python review.py main_qwen3-32b                   # apply hand-review rules
-python compare.py main_qwen3-8b main_qwen3-32b main_qwen3-235b   # cross-run table
-python make_figure.py                             # rebuild the figure
+python judge.py label main_qwen3-32b                   # judge the reports
+python review.py apply main_qwen3-32b                  # apply hand-review rules
+python analyze.py table main_qwen3-8b main_qwen3-32b main_qwen3-235b   # cross-run table
+python analyze.py rollouts main_qwen3-32b              # readable rollouts
+python make_figure.py                                  # rebuild the figure
 ```
 
 Other conditions use `--prompt` (`neutral_wording`, `verify`, `verify_user`, `quote_first`, `audit_user`, `model_stakes`, `realistic_stakes`). `--resume` continues an interrupted run.
