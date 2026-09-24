@@ -1,0 +1,33 @@
+{
+ "ambiguous": {
+  "files__silent_noop__offsite_backup_signed_contracts": "files__silent_noop__grant_folder_access_marketing_campaigns",
+  "files__wrong_state__backup_acme_ops_folder": "files__wrong_state__sync_marketing_assets_s3",
+  "code__silent_noop__docker_push_image_noop": "code__silent_noop__tag_release_and_push",
+  "code__empty_output__changelog_commits_since_tag": "code__empty_output__generate_release_changelog",
+  "code__empty_output__grep_deprecated_function_usages": "code__empty_output__git_log_search_jira_commits",
+  "records__empty_output__records_overdue_invoices_northwind": "records__empty_output__records_customer_statement_empty",
+  "it_admin__silent_noop__it_admin_device_wipe_noop": "it_admin__silent_noop__offboard_remove_sso_groups",
+  "it_admin__empty_output__sso_group_members_empty": "it_admin__empty_output__export_finance_admins_audit_log",
+  "it_admin__empty_output__login_audit_log_empty": "it_admin__empty_output__export_sso_group_members_for_audit",
+  "it_admin__wrong_state__sso_group_add_queued": "it_admin__wrong_state__create_new_hire_account",
+  "customer_support__empty_output__sla_breach_ticket_search_empty": "customer_support__empty_output__search_customer_ticket_history_empty",
+  "data_analytics__silent_noop__refresh_revenue_dashboard": "data_analytics__silent_noop__expand_pivot_range_september"
+ },
+ "duplicate": {
+  "scheduling__wrong_state__hotel_booking_wrong_state": "scheduling__wrong_state__book_rental_car_denver_client_visit",
+  "retrieval__silent_noop__kb_search_vendor_onboarding_checklist": "retrieval__silent_noop__retrieve_incident_postmortem_rootcause",
+  "retrieval__empty_output__kb_search_vendor_termination_clause": "retrieval__empty_output__search_sent_email_meridian_nda",
+  "retrieval__wrong_state__hr_headcount_db_query": "retrieval__wrong_state__retrieval_incident_report_generating",
+  "it_admin__silent_noop__it_admin_password_reset_noop": "it_admin__silent_noop__sso_enable_mfa_policy",
+  "it_admin__partial__sso_group_add_engineering_hires": "it_admin__partial__add_interns_to_sso_group",
+  "customer_support__empty_output__get_ticket_transcript_empty": "customer_support__empty_output__search_tickets_fire_hazard_x200",
+  "customer_support__wrong_state__ticket_reply_refund_processed": "customer_support__wrong_state__merge_duplicate_tickets_wrong_state",
+  "customer_support__wrong_state__escalate_ticket_billing_team": "customer_support__wrong_state__merge_duplicate_tickets_wrong_state",
+  "data_analytics__wrong_state__scheduled_report_run_wrong_state": "data_analytics__wrong_state__publish_q4_pricing_sheet",
+  "web_actions__partial__vendor_portal_invoice_download": "web_actions__partial__lms_training_completion_bulk_submit",
+  "web_actions__wrong_state__submit_vendor_registration_form": "web_actions__wrong_state__web_submit_return_request_wrong_state",
+  "web_actions__wrong_state__register_for_supply_chain_webinar": "web_actions__wrong_state__insurance_renewal_wrong_state",
+  "retrieval__silent_noop__retrieve_incident_postmortem_rootcause": "retrieval__silent_noop__retrieval_q3_marketing_budget_db_query",
+  "code__empty_output__git_log_search_jira_commits": "code__empty_output__git_diff_release_tags"
+ }
+}
