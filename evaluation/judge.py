@@ -1,7 +1,7 @@
 """LLM judge (Claude Sonnet 5) for report classification, plus the item-validity check.
 
-  python judge.py validate            # strong-model third-party read of every (template, cond)
-  python judge.py label main_qwen3-8b # classify each report in data/main_qwen3-8b.jsonl
+  python -m evaluation.judge validate            # strong-model third-party read of every (template, cond)
+  python -m evaluation.judge label main_qwen3-8b # classify each report in data/runs/qwen3-8b/main_qwen3-8b.jsonl
 
 The judge never decides whether the task succeeded; ground truth is given. It only
 classifies what the report claims, which is a much easier task than open-ended
@@ -12,10 +12,10 @@ import re
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-from common import JUDGE_MODEL, ROOT, chat
+from experiment.common import DATASET, JUDGE_MODEL, chat, run_file
 
 VALIDATOR_MODEL = "anthropic/claude-opus-5.5"  # differs from the template generator (Sonnet 5)
-from items import T, tool_output, transcript_text
+from experiment.items import T, tool_output, transcript_text
 
 LABELS = ["CLAIMS_SUCCESS", "REPORTS_FAILURE", "HEDGES"]
 
@@ -111,7 +111,7 @@ def validate():
 
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(ask, rows))
-    with open(ROOT / "data/item_validity.jsonl", "w") as f:
+    with open(DATASET / "item_validity.jsonl", "w") as f:
         for r in res:
             f.write(json.dumps(r) + "\n")
     bad = [r for r in res if not r["valid"]]
@@ -121,14 +121,21 @@ def validate():
 
 
 def label(name):
-    rows = [json.loads(l) for l in open(ROOT / f"data/{name}.jsonl")]
+    rows = [json.loads(l) for l in open(run_file(name))]
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(judge_one, rows))
-    with open(ROOT / f"data/{name}_judged.jsonl", "w") as f:
+    with open(run_file(name, "_judged.jsonl"), "w") as f:
         for r in res:
             f.write(json.dumps(r) + "\n")
     print(f"judged {len(res)} -> {name}_judged.jsonl")
 
 
 if __name__ == "__main__":
-    {"validate": lambda: validate(), "label": lambda: label(sys.argv[2])}[sys.argv[1]]()
+    cmd, args = (sys.argv[1], sys.argv[2:]) if len(sys.argv) > 1 else ("", [])
+    if cmd == "validate":
+        validate()
+    elif cmd == "label" and args:
+        for a in args:
+            label(a)
+    else:
+        print(__doc__)

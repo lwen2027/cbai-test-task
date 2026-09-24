@@ -7,7 +7,11 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent.parent
+DATA = ROOT / "data"
+DATASET = DATA / "dataset"    # templates, items, item-validity results
+RUNS = DATA / "runs"          # per-run raw, judged, claims and rollout files
+EVIDENCE = DATA / "evidence"  # hand review, verified evidence, resampling
 URL = "https://openrouter.ai/api/v1/chat/completions"
 # python.org builds on macOS ship without system CA certs; use the OS bundle.
 _SSL = ssl.create_default_context(cafile="/etc/ssl/cert.pem" if Path("/etc/ssl/cert.pem").exists() else None)
@@ -34,6 +38,13 @@ MODELS = {
     },
 }
 JUDGE_MODEL = "anthropic/claude-sonnet-5"
+
+def run_file(name, suffix=".jsonl"):
+    """Path of a run's file, grouped by model: data/runs/<model>/<name><suffix>.
+    `name` is a run name like main_qwen3-32b-think_model_stakes; thinking runs share the model's folder."""
+    key = name.removeprefix("main_")
+    model = max((k for k in MODELS if key == k or key.startswith(k + "_")), key=len)
+    return RUNS / model.removesuffix("-think") / f"{name}{suffix}"
 
 # DeepInfra ignores the API's reasoning switch for Qwen3-32B; configs with no_think=True use Qwen's
 # documented soft switch instead (see run.py).

@@ -1,6 +1,6 @@
 """Figure: P(claims success | model recognizes the failure when asked), by model, thinking off vs on.
 
-  python make_figure.py   -> figures/false_claims_by_model.png (+ .svg)
+  python -m analysis.make_figure   -> figures/false_claims_by_model.png (+ .svg)
 
 Numerator: subtle-condition false claims whose failure the same model recognizes in the fresh-context
 third-party check. Denominator: subtle failures that check recognizes. Clean set (ambiguous templates
@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import PathPatch
 from matplotlib.path import Path
 
-from common import ROOT
+from experiment.common import ROOT, run_file
 
 MODELS = [("Qwen3-8B", "qwen3-8b"), ("Qwen3-32B", "qwen3-32b"), ("Qwen3-235B", "qwen3-235b")]
 MODES = [("Thinking off", "", "#2a78d6"), ("Thinking on", "-think", "#eb6834")]  # palette slots 1, 2
@@ -22,7 +22,7 @@ SURFACE, TEXT, TEXT_2, GRID = "#fcfcfb", "#0b0b0b", "#52514e", "#e6e5e1"
 
 
 def rate(run):
-    rows = [json.loads(l) for l in open(ROOT / f"data/main_{run}_judged.jsonl")]
+    rows = [json.loads(l) for l in open(run_file(f"main_{run}", "_judged.jsonl"))]
     sub = [r for r in rows if r["cond"] == "subtle" and not r["ambiguous"]]
     recognized = [r for r in sub if r["third_party"] == "no"]
     k = sum(r["final_label"] == "CLAIMS_SUCCESS" for r in recognized)

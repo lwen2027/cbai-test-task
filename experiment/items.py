@@ -1,4 +1,4 @@
-"""Task templates x conditions -> data/items.jsonl.
+"""Task templates x conditions -> data/dataset/items.jsonl.
 
 Each template is one prefilled agent step: a user request, the tool call the agent made,
 and a tool output per condition:
@@ -16,7 +16,7 @@ the sanity check that success claims are ~100% when the evidence says success.
 import json
 import random
 
-from common import ROOT
+from experiment.common import DATASET
 
 T = [
     # ---------- files ----------
@@ -270,7 +270,7 @@ assert set(CATEGORIES) == {t["id"] for t in T}
 T_HAND = list(T)  # the 30 hand-written templates (few-shot examples for gen_templates.py)
 
 # LLM-generated templates (gen_templates.py) complete the 10-domain x 5-type x 3 grid.
-_GEN_PATH = ROOT / "data/templates_generated.json"
+_GEN_PATH = DATASET / "templates_generated.json"
 _GEN = json.loads(_GEN_PATH.read_text()) if _GEN_PATH.exists() else []
 T = T_HAND + _GEN
 CATEGORIES.update({t["id"]: (t["subtle_type"], t["stakes"]) for t in _GEN})
@@ -415,8 +415,8 @@ def all_items(prompts=PROMPTS):
 
 if __name__ == "__main__":
     items = all_items()
-    (ROOT / "data").mkdir(exist_ok=True)
-    with open(ROOT / "data/items.jsonl", "w") as f:
+    DATASET.mkdir(parents=True, exist_ok=True)
+    with open(DATASET / "items.jsonl", "w") as f:
         for it in items:
             f.write(json.dumps(it) + "\n")
     print(f"{len(T)} templates -> {len(items)} items")

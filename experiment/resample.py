@@ -1,6 +1,6 @@
 """Robustness of the recognition checks: resample instead of trusting one greedy yes/no.
 
-  python resample.py   -> data/resample_qwen3-8b.jsonl
+  python -m experiment.resample   -> data/evidence/resample_qwen3-8b.jsonl
 
 Per item:
   self_no_rate     - same-context self-check, K samples
@@ -13,9 +13,9 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from common import MODELS, ROOT, chat
-from items import build_messages, tools_for, transcript_text
-from run import THIRD_PARTY, yes_no
+from experiment.common import EVIDENCE, MODELS, chat, run_file
+from experiment.items import build_messages, tools_for, transcript_text
+from experiment.run import THIRD_PARTY, yes_no
 
 MODEL = "qwen3-8b"
 K, K_REASON = 10, 5
@@ -64,7 +64,7 @@ def resample(r):
 
 
 def main():
-    rows = [json.loads(l) for l in open(ROOT / f"data/main_{MODEL}.jsonl")]
+    rows = [json.loads(l) for l in open(run_file(f"main_{MODEL}"))]
     results, errors = [], []
     with ThreadPoolExecutor(12) as ex:
         futs = {ex.submit(resample, r): r["item_id"] for r in rows}
@@ -73,7 +73,7 @@ def main():
                 results.append(f.result())
             except Exception as e:
                 errors.append((futs[f], str(e)[:150]))
-    with open(ROOT / f"data/resample_{MODEL}.jsonl", "w") as fh:
+    with open(EVIDENCE / f"resample_{MODEL}.jsonl", "w") as fh:
         for r in results:
             fh.write(json.dumps(r) + "\n")
     print(f"resampled {len(results)} items, {len(errors)} errors")

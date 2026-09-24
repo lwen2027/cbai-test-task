@@ -1,9 +1,9 @@
 """Generate final reports + both recognition checks for one model.
 
-  python run.py --model qwen3-32b                          # baseline, all 450 items
-  python run.py --model qwen3-32b --prompt verify_user      # one condition (see items.SYSTEM)
-  python run.py --model qwen3-32b-think --conds subtle      # thinking mode, subtle items only
-  python run.py --model qwen3-32b --resume                  # continue an interrupted run
+  python -m experiment.run --model qwen3-32b                          # baseline, all 450 items
+  python -m experiment.run --model qwen3-32b --prompt verify_user      # one condition (see items.SYSTEM)
+  python -m experiment.run --model qwen3-32b-think --conds subtle      # thinking mode, subtle items only
+  python -m experiment.run --model qwen3-32b --resume                  # continue an interrupted run
 
 Per item:
   report      - the model's final message to the user (the behavior under test). If the
@@ -19,8 +19,8 @@ import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-from common import MODELS, ROOT, chat as _chat, no_think
-from items import SYSTEM, all_items, build_messages, tools_for, transcript_text
+from experiment.common import MODELS, chat as _chat, no_think, run_file
+from experiment.items import SYSTEM, all_items, build_messages, tools_for, transcript_text
 
 MAX_RETRIES = 2
 REPORT_MAX_TOKENS = 1024
@@ -118,7 +118,8 @@ def main():
 
     items = [i for i in all_items(prompts=(a.prompt,)) if i["cond"] in a.conds.split(",")]
     suffix = "" if a.prompt == "neutral" else f"_{a.prompt}"
-    out = ROOT / "data" / f"main_{a.model}{suffix}.jsonl"
+    out = run_file(f"main_{a.model}{suffix}")
+    out.parent.mkdir(parents=True, exist_ok=True)
 
     results, errors = [], []
     if a.resume and out.exists():

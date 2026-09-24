@@ -77,19 +77,29 @@ Stage 3 looks like a learned disposition, a prior toward completion reports, rat
 
 ## Repository layout
 
-| Path | Contents |
-|---|---|
-| `common.py` | OpenRouter client (standard library only) and model configs |
-| `items.py` | Hand-written templates, conditions (system prompts and user-message additions), toolsets |
-| `gen_templates.py` | LLM template generation, validation-driven replacement, identifier diversification |
-| `run.py` | Runs a model on the items: report generation and both recognition checks |
-| `judge.py` | LLM judge (`label`) and item-validity check (`validate`) |
-| `review.py` | Labels beyond the judge: hand-review rules (`apply`) and LLM coding of false claims (`code`) |
-| `resample.py` | Robustness check for the recognition questions |
-| `analyze.py` | Cross-run tables (`table`), readable rollouts (`rollouts`), dataset and pipeline checks (`qa`) |
-| `make_figure.py` | Builds the figure above |
-| `data/` | Templates and items, per-run raw and judged results (`main_<run>_judged.jsonl`), readable rollouts (`main_<run>_rollouts.md`), resampling results, hand-verified evidence |
-| `data/archive/` | Superseded runs (pilot, 30-template, first 150-template run) and records of the data-quality pass |
+```
+experiment/              dataset and model runs
+  common.py              OpenRouter client (standard library only), model configs, data paths
+  items.py               hand-written templates, conditions, toolsets
+  gen_templates.py       LLM template generation, validation-driven replacement, identifier diversification
+  run.py                 run a model on the items: report + both recognition checks
+  resample.py            robustness check for the recognition questions
+evaluation/              labelling the outputs
+  judge.py               LLM judge (label) and item-validity check (validate)
+  review.py              hand-review rules (apply) and LLM coding of false claims (code)
+analysis/                results
+  analyze.py             cross-run tables (table), readable rollouts (rollouts), checks (qa)
+  make_figure.py         the figure above
+data/
+  dataset/               generated templates, the 450 items, item-validity results
+  runs/<model>/          per-run raw, judged, claims and rollout files, grouped by model
+                         (e.g. runs/qwen3-32b/main_qwen3-32b-think_model_stakes_judged.jsonl)
+  evidence/              hand-review labels, hand-verified evidence, resampling results
+  archive/               superseded runs and records of the data-quality pass
+figures/                 the figure (PNG, SVG)
+```
+
+Run names follow `main_<model>[-think][_<condition>]`. Each run has a raw file (`.jsonl`), judged labels (`_judged.jsonl`) and readable rollouts (`_rollouts.md`); some also have coded false claims (`_claims.jsonl`).
 
 ## Reproducing
 
@@ -99,17 +109,17 @@ Requires Python 3.10+ and `matplotlib`, for the figure only. The API client uses
 OPENROUTER_API_KEY=sk-or-...
 ```
 
-Then, for example:
+Then, from the repository root:
 
 ```bash
-python items.py                                        # build the item set
-python run.py --model qwen3-32b                        # baseline run (all 450 items)
-python run.py --model qwen3-32b-think --conds subtle   # thinking mode, subtle items
-python judge.py label main_qwen3-32b                   # judge the reports
-python review.py apply main_qwen3-32b                  # apply hand-review rules
-python analyze.py table main_qwen3-8b main_qwen3-32b main_qwen3-235b   # cross-run table
-python analyze.py rollouts main_qwen3-32b              # readable rollouts
-python make_figure.py                                  # rebuild the figure
+python -m experiment.items                                     # build the item set
+python -m experiment.run --model qwen3-32b                     # baseline run (all 450 items)
+python -m experiment.run --model qwen3-32b-think --conds subtle   # thinking mode, subtle items
+python -m evaluation.judge label main_qwen3-32b                # judge the reports
+python -m evaluation.review apply main_qwen3-32b               # apply hand-review rules
+python -m analysis.analyze table main_qwen3-8b main_qwen3-32b main_qwen3-235b   # cross-run table
+python -m analysis.analyze rollouts main_qwen3-32b             # readable rollouts
+python -m analysis.make_figure                                 # rebuild the figure
 ```
 
-Other conditions use `--prompt` (`neutral_wording`, `verify`, `verify_user`, `quote_first`, `audit_user`, `model_stakes`, `realistic_stakes`). `--resume` continues an interrupted run.
+Other conditions use `--prompt` on `experiment.run` (`neutral_wording`, `verify`, `verify_user`, `quote_first`, `audit_user`, `model_stakes`, `realistic_stakes`). `--resume` continues an interrupted run.

@@ -1,8 +1,8 @@
 """Analysis utilities.
 
-  python analyze.py table RUN [RUN ...]    cross-run summary on the clean item set
-  python analyze.py rollouts RUN [RUN ...] write data/<RUN>_rollouts.md (readable rollouts)
-  python analyze.py qa [RUN]               dataset checks, plus pipeline checks on one run
+  python -m analysis.analyze table RUN [RUN ...]    cross-run summary on the clean item set
+  python -m analysis.analyze rollouts RUN [RUN ...] write data/runs/<model>/<RUN>_rollouts.md (readable rollouts)
+  python -m analysis.analyze qa [RUN]               dataset checks, plus pipeline checks on one run
                                            (default main_qwen3-8b)
 
 RUN is a results name such as main_qwen3-32b or main_qwen3-8b-think_model_stakes.
@@ -14,13 +14,13 @@ from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from itertools import combinations
 
-from common import ROOT
+from experiment.common import ROOT, run_file
 
 TYPES = ["wrong_target", "empty_output", "partial", "wrong_state", "silent_noop"]
 
 
 def load(name):
-    return [json.loads(l) for l in open(ROOT / f"data/{name}_judged.jsonl")]
+    return [json.loads(l) for l in open(run_file(name, "_judged.jsonl"))]
 
 
 # ---------------------------------------------------------------- table
@@ -65,7 +65,7 @@ def table(names):
 # ---------------------------------------------------------------- rollouts
 
 def rollouts(name):
-    from items import SYSTEM, USER_SUFFIX
+    from experiment.items import SYSTEM, USER_SUFFIX
 
     rows = load(name)
     order = {"success": 0, "explicit": 1, "subtle": 2}
@@ -102,7 +102,7 @@ def rollouts(name):
                    if r["cond"] == "subtle" and r.get("disclosed") is not None else "")
                 + f"promises_action: `{r['promises_action']}`  ",
                 f"Judge: {r['why']}\n"]
-    path = ROOT / f"data/{name}_rollouts.md"
+    path = run_file(name, "_rollouts.md")
     path.write_text("\n".join(out))
     print(f"wrote {path.relative_to(ROOT)} ({len(rows)} items)")
 
@@ -110,8 +110,8 @@ def rollouts(name):
 # ---------------------------------------------------------------- qa
 
 def qa(run="main_qwen3-8b"):
-    from gen_templates import ERROR_WORDS
-    from items import T, all_items, tool_output
+    from experiment.gen_templates import ERROR_WORDS
+    from experiment.items import T, all_items, tool_output
 
     print("=== DATASET ===")
     items = all_items()

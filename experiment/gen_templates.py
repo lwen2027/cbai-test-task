@@ -1,8 +1,8 @@
 """Scale the template set to 10 domains x 5 subtle types x 3 templates with an LLM.
 
-  python gen_templates.py                    -> data/templates_generated.json (fill the grid)
-  python gen_templates.py --replace-invalid  regenerate generated templates that failed validation
-  python gen_templates.py --diversify-ids    give reused numeric identifiers fresh values
+  python -m experiment.gen_templates                    -> data/dataset/templates_generated.json (fill the grid)
+  python -m experiment.gen_templates --replace-invalid  regenerate generated templates that failed validation
+  python -m experiment.gen_templates --diversify-ids    give reused numeric identifiers fresh values
 
 The 30 hand-written templates in items.py fill one slot per cell for the first 6 domains
 and serve as few-shot examples. Generated templates must pass a schema check and an
@@ -13,8 +13,8 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from common import ROOT, chat
-from items import CATEGORIES, T_HAND as T
+from experiment.common import DATASET, chat
+from experiment.items import CATEGORIES, T_HAND as T
 
 GEN_MODEL = "anthropic/claude-sonnet-5"
 PER_CELL = 3
@@ -130,8 +130,8 @@ def gen_cell(domain, type_name, n, existing=None):
 
 def validate_template(t):
     """All three conditions must read as intended to the validator model (not the generator)."""
-    from judge import VALIDATE_PROMPT, VALIDATOR_MODEL, ask_json
-    from items import tool_output, transcript_text
+    from evaluation.judge import VALIDATE_PROMPT, VALIDATOR_MODEL, ask_json
+    from experiment.items import tool_output, transcript_text
     for cond, expected in (("success", "yes"), ("explicit", "no"), ("subtle", "no")):
         row = dict(user=t["user"], tool=t["tool"], args=t["args"], tool_output=tool_output(t, cond))
         try:
@@ -146,7 +146,7 @@ def validate_template(t):
 def replace_templates(ids, reason):
     """Regenerate the given generated templates within their cells, seeing every other template in the
     domain; accept only replacements the validator passes on all three conditions."""
-    gen = json.loads((ROOT / "data/templates_generated.json").read_text())
+    gen = json.loads((DATASET / "templates_generated.json").read_text())
     ids = set(ids)
     targets = [t for t in gen if t["id"] in ids]
     assert len(targets) == len(ids), set(ids) - {t["id"] for t in targets}
@@ -167,7 +167,7 @@ def replace_templates(ids, reason):
     with ThreadPoolExecutor(8) as ex:
         repl = dict(ex.map(fix, targets))
     gen = [repl.get(t["id"], t) for t in gen]
-    (ROOT / "data/templates_generated.json").write_text(json.dumps(gen, indent=1))
+    (DATASET / "templates_generated.json").write_text(json.dumps(gen, indent=1))
     print(f"replaced {len(repl)} templates")
     return {old: new["id"] for old, new in repl.items()}
 
@@ -187,7 +187,7 @@ def diversify_identifiers(seed=0):
     near-miss structure survives. Hand-written templates keep their numbers."""
     import random
     rng = random.Random(seed)
-    gen = json.loads((ROOT / "data/templates_generated.json").read_text())
+    gen = json.loads((DATASET / "templates_generated.json").read_text())
     used = set().union(*(_id_numbers(t) for t in T))
     changed = []
     for t in gen:
@@ -209,7 +209,7 @@ def diversify_identifiers(seed=0):
             t["ids_remapped"] = mapping
             changed.append(t["id"])
         used |= _id_numbers(t)
-    (ROOT / "data/templates_generated.json").write_text(json.dumps(gen, indent=1))
+    (DATASET / "templates_generated.json").write_text(json.dumps(gen, indent=1))
     print(f"remapped identifiers in {len(changed)} templates")
     return changed
 
@@ -224,15 +224,15 @@ def main():
     with ThreadPoolExecutor(8) as ex:
         results = list(ex.map(lambda j: gen_cell(*j), jobs))
     gen = [t for cell in results for t in cell]
-    (ROOT / "data/templates_generated.json").write_text(json.dumps(gen, indent=1))
-    print(f"generated {len(gen)} templates across {len(jobs)} cells -> data/templates_generated.json")
+    (DATASET / "templates_generated.json").write_text(json.dumps(gen, indent=1))
+    print(f"generated {len(gen)} templates across {len(jobs)} cells -> data/dataset/templates_generated.json")
 
 
 if __name__ == "__main__":
     import sys
     if sys.argv[1:] == ["--replace-invalid"]:  # regenerate templates that failed `judge.py validate`
-        bad = {json.loads(l)["template"] for l in open(ROOT / "data/item_validity.jsonl") if not json.loads(l)["valid"]}
-        gen_ids = {t["id"] for t in json.loads((ROOT / "data/templates_generated.json").read_text())}
+        bad = {json.loads(l)["template"] for l in open(DATASET / "item_validity.jsonl") if not json.loads(l)["valid"]}
+        gen_ids = {t["id"] for t in json.loads((DATASET / "templates_generated.json").read_text())}
         replace_templates(bad & gen_ids, "failed validation")
     elif sys.argv[1:] == ["--diversify-ids"]:
         diversify_identifiers()

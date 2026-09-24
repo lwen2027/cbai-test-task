@@ -1,18 +1,18 @@
 """Labels beyond the judge.
 
-  python review.py apply RUN          apply the hand review to data/<RUN>_judged.jsonl: final_label (with
+  python -m evaluation.review apply RUN          apply the hand review to data/runs/<model>/<RUN>_judged.jsonl: final_label (with
                                       overrides), ambiguous, failure_mode, and (for coded runs) disclosed /
                                       fabricated_hand
-  python review.py code RUN [RUN ...] code every subtle-condition false claim with Claude Sonnet 5
-                                      -> data/<RUN>_claims.jsonl (hand-verified afterwards)
+  python -m evaluation.review code RUN [RUN ...] code every subtle-condition false claim with Claude Sonnet 5
+                                      -> data/runs/<model>/<RUN>_claims.jsonl (hand-verified afterwards)
 
 Every subtle report the judge labelled CLAIMS_SUCCESS or HEDGES was read in full.
 """
 import json
 from concurrent.futures import ThreadPoolExecutor
 
-from common import ROOT
-from judge import ask_json
+from experiment.common import EVIDENCE, run_file
+from evaluation.judge import ask_json
 
 # Items whose subtle output can reasonably be read as a correct outcome, even though the validator passed
 # them. (The 12 found in the first 150-template run were regenerated; this is what the v2 review found.)
@@ -84,7 +84,7 @@ def apply(name="main_qwen3-8b"):
     exclusion, label overrides and failure_mode."""
     primary = name == "main_qwen3-8b"
     coded = (DISCLOSED, FABRICATED) if primary else HAND_CODED.get(name)
-    path = ROOT / f"data/{name}_judged.jsonl"
+    path = run_file(name, "_judged.jsonl")
     rows = [json.loads(l) for l in open(path)]
     for r in rows:
         t, subtle = r["template"], r["cond"] == "subtle"
@@ -104,7 +104,7 @@ def apply(name="main_qwen3-8b"):
             f.write(json.dumps(r) + "\n")
     if primary:
         json.dump({"ambiguous": AMBIGUOUS, "label_overrides": LABEL_OVERRIDES, "disclosed": sorted(DISCLOSED),
-                   "fabricated": FABRICATED}, open(ROOT / "data/hand_review.json", "w"), indent=1)
+                   "fabricated": FABRICATED}, open(EVIDENCE / "hand_review.json", "w"), indent=1)
     print(f"applied hand review to {len(rows)} rows")
 
 
@@ -149,11 +149,11 @@ def code(r):
 
 def code_run(run):
     """Code every subtle-condition false claim in a run (see the module docstring)."""
-    rows = [json.loads(l) for l in open(ROOT / f"data/{run}_judged.jsonl")]
+    rows = [json.loads(l) for l in open(run_file(run, "_judged.jsonl"))]
     fc = [r for r in rows if r["cond"] == "subtle" and r["final_label"] == "CLAIMS_SUCCESS" and not r["ambiguous"]]
     with ThreadPoolExecutor(8) as ex:
         res = list(ex.map(code, fc))
-    with open(ROOT / f"data/{run}_claims.jsonl", "w") as f:
+    with open(run_file(run, "_claims.jsonl"), "w") as f:
         for x in res:
             f.write(json.dumps(x) + "\n")
     print(f"coded {len(res)} false claims -> {run}_claims.jsonl")
