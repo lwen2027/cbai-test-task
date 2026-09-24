@@ -70,8 +70,6 @@ Stage 3 looks like a learned disposition, a prior toward completion reports, rat
 - **Labels:** the judge was audited, but hand coding involves judgment calls.
 - **Reasoning traces** aren't guaranteed to reflect the computation behind the report.
 
-See `report.md` for the full list.
-
 ## Follow-ups
 
 1. **A belief probe (main next step).** Behavior can't tell Stage 2 from a *silent* Stage 3 when there's no visible reasoning. The plan: train a linear probe on Qwen3-32B's residual stream, at the end of the tool result and before the report starts, to predict ground-truth failure. Then compare non-thinking false claims against honest reports, with explicit failures and "noticed but claimed" reasoning traces as positive controls. Add steering with the probe direction to test whether it's causal.
@@ -81,7 +79,6 @@ See `report.md` for the full list.
 
 | Path | Contents |
 |---|---|
-| `report.md` | Full write-up: design, evaluation, findings, interpretation, limitations, follow-ups |
 | `items.py` | Hand-written templates, conditions (system prompts and user-message additions), toolsets |
 | `gen_templates.py` | LLM template generation, validation-driven replacement, identifier diversification |
 | `run.py` | Runs a model on the items, with report generation and both recognition checks |

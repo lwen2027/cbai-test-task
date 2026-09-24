@@ -4,3 +4,7 @@ __pycache__/
 .claude/settings.local.json
 data/log_*.txt
 .DS_Store
+
+# Write-up drafts (kept local, not part of the submitted code)
+report.md
+data/run_30templates/report_30templates.md
